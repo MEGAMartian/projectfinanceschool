@@ -454,6 +454,16 @@ function BookView() {
   return (
     <div style={{maxWidth:"860px",margin:"0 auto",padding:"2rem 0"}}>
 
+      {/* Say Hello – Infocast */}
+      <div style={{background:"linear-gradient(135deg,#181c25 0%,#1a1f2e 100%)",border:"1px solid #2a2e3f",borderRadius:"10px",padding:"1.4rem 1.75rem",marginBottom:"1.75rem",display:"flex",alignItems:"center",gap:"1.5rem",flexWrap:"wrap"}}>
+        <div style={{fontSize:"1.8rem",flexShrink:0}}>👋</div>
+        <div style={{flex:1,minWidth:"200px"}}>
+          <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.1rem",color:"#e8dcc8",fontWeight:600,marginBottom:".3rem"}}>Attending Infocast in Arizona?</div>
+          <div style={{color:"#7a8099",fontSize:".85rem",lineHeight:1.5}}>Come say hello — always happy to talk tax credits, project finance, and renewable energy structures.</div>
+        </div>
+        <a href="mailto:john@orbit.tax" style={{flexShrink:0,background:"#c9913d",color:"#0f1219",borderRadius:"7px",padding:".55rem 1.25rem",fontWeight:700,fontSize:".85rem",textDecoration:"none",letterSpacing:".02em",whiteSpace:"nowrap"}}>john@orbit.tax</a>
+      </div>
+
       {/* Hero */}
       <div style={{display:"flex",gap:"3.5rem",alignItems:"flex-start",flexWrap:"wrap",marginBottom:"3rem"}}>
         {/* Book cover */}
@@ -534,16 +544,7 @@ function BookView() {
         </div>
       </div>
 
-      {/* Say Hello – Infocast */}
       <SupportBanner alwaysShow={true} />
-      <div style={{background:"linear-gradient(135deg,#181c25 0%,#1a1f2e 100%)",border:"1px solid #2a2e3f",borderRadius:"10px",padding:"1.4rem 1.75rem",marginBottom:"1.25rem",display:"flex",alignItems:"center",gap:"1.5rem",flexWrap:"wrap"}}>
-        <div style={{fontSize:"1.8rem",flexShrink:0}}>👋</div>
-        <div style={{flex:1,minWidth:"200px"}}>
-          <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.1rem",color:"#e8dcc8",fontWeight:600,marginBottom:".3rem"}}>Attending Infocast in Arizona?</div>
-          <div style={{color:"#7a8099",fontSize:".85rem",lineHeight:1.5}}>Come say hello — always happy to talk tax credits, project finance, and renewable energy structures.</div>
-        </div>
-        <a href="mailto:john@orbit.tax" style={{flexShrink:0,background:"#c9913d",color:"#0f1219",borderRadius:"7px",padding:".55rem 1.25rem",fontWeight:700,fontSize:".85rem",textDecoration:"none",letterSpacing:".02em",whiteSpace:"nowrap"}}>john@orbit.tax</a>
-      </div>
 
       {/* Support / Donate */}
       <div style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"10px",padding:"1.4rem 1.75rem",marginBottom:"1.25rem"}}>
