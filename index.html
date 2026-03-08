@@ -459,7 +459,7 @@ function BookView() {
         <div style={{fontSize:"1.8rem",flexShrink:0}}>👋</div>
         <div style={{flex:1,minWidth:"200px"}}>
           <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.1rem",color:"#e8dcc8",fontWeight:600,marginBottom:".3rem"}}>Attending Infocast in Arizona?</div>
-          <div style={{color:"#7a8099",fontSize:".85rem",lineHeight:1.5}}>Come say hello — always happy to talk tax credits, project finance, and renewable energy structures.</div>
+          <div style={{color:"#7a8099",fontSize:".85rem",lineHeight:1.5}}>Come say hello — always happy to explain ITCs for satellites and data centers. You heard right.</div>
         </div>
         <a href="mailto:john@orbit.tax" style={{flexShrink:0,background:"#c9913d",color:"#0f1219",borderRadius:"7px",padding:".55rem 1.25rem",fontWeight:700,fontSize:".85rem",textDecoration:"none",letterSpacing:".02em",whiteSpace:"nowrap"}}>john@orbit.tax</a>
       </div>
@@ -644,6 +644,14 @@ function HNWView() {
   return (
     <div style={{maxWidth:"1060px",margin:"0 auto"}}>
       <SupportBanner alwaysShow={false} />
+      <div style={{background:"linear-gradient(135deg,#181c25 0%,#1a1f2e 100%)",border:"1px solid #2a2e3f",borderRadius:"10px",padding:"1.4rem 1.75rem",marginBottom:"1.75rem",display:"flex",alignItems:"center",gap:"1.5rem",flexWrap:"wrap"}}>
+        <div style={{fontSize:"1.8rem",flexShrink:0}}>👋</div>
+        <div style={{flex:1,minWidth:"200px"}}>
+          <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.1rem",color:"#e8dcc8",fontWeight:600,marginBottom:".3rem"}}>Attending Infocast in Arizona?</div>
+          <div style={{color:"#7a8099",fontSize:".85rem",lineHeight:1.5}}>Come say hello — always happy to explain ITCs for satellites and data centers. You heard right.</div>
+        </div>
+        <a href="mailto:john@orbit.tax" style={{flexShrink:0,background:"#c9913d",color:"#0f1219",borderRadius:"7px",padding:".55rem 1.25rem",fontWeight:700,fontSize:".85rem",textDecoration:"none",letterSpacing:".02em",whiteSpace:"nowrap"}}>john@orbit.tax</a>
+      </div>
 
       {/* Header */}
       <div style={{marginBottom:"2rem"}}>
@@ -725,7 +733,14 @@ function SandboxesView({ sandboxes, onOpenSandbox, onAddSandbox, onEditSandbox, 
   return (
     <div>
       <SupportBanner alwaysShow={false} />
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.75rem"}}>
+      <div style={{background:"linear-gradient(135deg,#181c25 0%,#1a1f2e 100%)",border:"1px solid #2a2e3f",borderRadius:"10px",padding:"1.4rem 1.75rem",marginBottom:"1.75rem",display:"flex",alignItems:"center",gap:"1.5rem",flexWrap:"wrap"}}>
+        <div style={{fontSize:"1.8rem",flexShrink:0}}>👋</div>
+        <div style={{flex:1,minWidth:"200px"}}>
+          <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.1rem",color:"#e8dcc8",fontWeight:600,marginBottom:".3rem"}}>Attending Infocast in Arizona?</div>
+          <div style={{color:"#7a8099",fontSize:".85rem",lineHeight:1.5}}>Come say hello — always happy to explain ITCs for satellites and data centers. You heard right.</div>
+        </div>
+        <a href="mailto:john@orbit.tax" style={{flexShrink:0,background:"#c9913d",color:"#0f1219",borderRadius:"7px",padding:".55rem 1.25rem",fontWeight:700,fontSize:".85rem",textDecoration:"none",letterSpacing:".02em",whiteSpace:"nowrap"}}>john@orbit.tax</a>
+      </div>
         <div>
           <h2 style={{margin:0,fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.7rem",color:"#e8dcc8"}}>Research Sandboxes</h2>
           <p style={{margin:".3rem 0 0",color:"#5a5f78",fontSize:".83rem"}}>Organize resources by project, client, or topic</p>
@@ -799,6 +814,14 @@ function QuickRefView({ quickRefs, onUpdate }) {
       {showAdd  && <RefModal onSave={addRef}  onClose={()=>setShowAdd(false)} />}
       {editRef  && <RefModal refItem={editRef} onSave={saveEdit} onClose={()=>setEditRef(null)} />}
       <SupportBanner alwaysShow={false} />
+      <div style={{background:"linear-gradient(135deg,#181c25 0%,#1a1f2e 100%)",border:"1px solid #2a2e3f",borderRadius:"10px",padding:"1.4rem 1.75rem",marginBottom:"1.75rem",display:"flex",alignItems:"center",gap:"1.5rem",flexWrap:"wrap"}}>
+        <div style={{fontSize:"1.8rem",flexShrink:0}}>👋</div>
+        <div style={{flex:1,minWidth:"200px"}}>
+          <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.1rem",color:"#e8dcc8",fontWeight:600,marginBottom:".3rem"}}>Attending Infocast in Arizona?</div>
+          <div style={{color:"#7a8099",fontSize:".85rem",lineHeight:1.5}}>Come say hello — always happy to explain ITCs for satellites and data centers. You heard right.</div>
+        </div>
+        <a href="mailto:john@orbit.tax" style={{flexShrink:0,background:"#c9913d",color:"#0f1219",borderRadius:"7px",padding:".55rem 1.25rem",fontWeight:700,fontSize:".85rem",textDecoration:"none",letterSpacing:".02em",whiteSpace:"nowrap"}}>john@orbit.tax</a>
+      </div>
 
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.75rem"}}>
         <div>
@@ -878,7 +901,7 @@ function QuickRefView({ quickRefs, onUpdate }) {
 // ─── Root App ─────────────────────────────────────────────────────────────────
 function App() {
   const [data,           setData]           = useState(null);
-  const [view,           setView]           = useState("sandboxes");
+  const [view,           setView]           = useState("book");
   const [activeSandbox,  setActiveSandbox]  = useState(null);
   const [showAddSandbox, setShowAddSandbox] = useState(false);
   const [editSandbox,    setEditSandbox]    = useState(null);
