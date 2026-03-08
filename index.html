@@ -190,6 +190,17 @@ const defaultData = {
     { id: "plr_202318004", category: "plr", citation: "PLR 202318004", title: "Satellite Casualty – §1033 Involuntary Conversion", url: "", notes: "§1033 nonrecognition for involuntary conversion of satellite. Addresses replacement property requirements and timing rules for space-based assets." },
     { id: "cca_201524024", category: "cca", citation: "CCA 201524024", title: "Solar Partnership Flip",         url: "", notes: "IRS Chief Counsel guidance blessing partnership flip structure for solar (by analogy to wind Rev. Proc. 2007-65)." },
     { id: "cca_200812023", category: "cca", citation: "CCA 200812023", title: "ITC Allocation in Partnerships", url: "", notes: "" },
+
+    // ── OBBBA 2025 ────────────────────────────────────────────────────────────
+    { id: "obbba_2025",    category: "legis", citation: "One Big Beautiful Bill Act (OBBBA)",  title: "Pub. L. No. 119-___ (July 4, 2025)",  url: "https://www.congress.gov/bill/119th-congress/house-bill/1", notes: "Signed July 4, 2025. Major changes to IRA 2022 energy credits: (1) terminates §§45Y/48E ITC/PTC for wind and solar placed in service after 12/31/2027 (with exception for projects beginning construction within 12 months of enactment, i.e., by 7/4/2026); (2) expands FEOC restrictions — no ITC/PTC for projects beginning construction after 12/31/2025 that receive 'material assistance' from prohibited foreign entities; (3) fixes IRA drafting error — §48E domestic content thresholds now escalate to match §45Y (40%/45%/50%/55%); (4) restores 100% bonus depreciation permanently; (5) eliminates ITC/PTC for residential solar/wind leases beginning 2026; (6) terminates §45V clean hydrogen PTC for projects beginning construction after 2027; (7) eliminates §45X wind component credits after 2027; (8) preserves §6418 transferability (but prohibits transfer to specified foreign entities); (9) non-wind/solar technologies (storage, geothermal, hydro, nuclear) retain credits through 2033 phase-down schedule." },
+
+    // ── Trump Executive Orders – Renewables ──────────────────────────────────
+    { id: "eo_unleashing",  category: "eo", citation: "E.O. 'Unleashing American Energy'",                   title: "Executive Order (Jan. 20, 2025)",  url: "https://www.whitehouse.gov/presidential-actions/2025/01/unleashing-american-energy/", notes: "Signed January 20, 2025. Revokes Biden E.O. 14082 (IRA implementation). Signals policy shift favoring fossil fuels, nuclear, geothermal, and hydropower. Directs agencies to review IRA tax credits for alignment with administration priorities. Pauses IRA grant and loan disbursements pending review." },
+    { id: "eo_wind",        category: "eo", citation: "E.O. 'Temporary Withdrawal — Offshore Wind Leasing'", title: "Executive Order (Jan. 20, 2025)",  url: "https://www.whitehouse.gov/presidential-actions/2025/01/temporary-withdrawal-of-all-areas-on-the-outer-continental-shelf-from-offshore-wind-leasing-and-review-of-the-federal-governments-leasing-and-permitting-practices-for-wind-projects/", notes: "Signed January 20, 2025. Orders immediate pause on new or renewed offshore wind leasing on the Outer Continental Shelf. Directs Interior to review existing wind leases and identify bases for rescission. Does not directly affect existing leases or tax credits, but increases project development uncertainty." },
+    { id: "eo_boc",         category: "eo", citation: "E.O. 'Ending Market Distorting Subsidies for Unreliable, Foreign Controlled Energy Sources'", title: "Executive Order (July 7, 2025)", url: "https://www.whitehouse.gov/presidential-actions/2025/07/ending-market-distorting-subsidies-for-unreliable-foreign-controlled-energy-sources/", notes: "Signed July 7, 2025 — three days after OBBBA. Directs Treasury (by 8/18/2025) to issue new/revised beginning-of-construction (BOC) guidance for §§45Y/48E to 'strictly enforce' wind/solar credit termination. Specifically targets: (1) restricting physical work and 5% safe harbors 'unless a substantial portion of the facility has been built'; (2) preventing artificial acceleration of BOC dates. Directs Interior to eliminate preferential treatment of wind/solar on public lands. Creates significant uncertainty for projects attempting to establish BOC before 7/4/2026 deadline." },
+
+    // ── 2025 IRS Guidance ────────────────────────────────────────────────────
+    { id: "n_2025_08",  category: "notice", citation: "Notice 2025-08",  title: "Domestic Content – Updated Safe Harbor Cost Tables (2025)",  url: "https://www.irs.gov/pub/irs-drop/n-25-08.pdf", notes: "Updates domestic content safe harbor cost percentage tables for additional technologies under §§48, 48E, 45, 45Y. Taxpayers may rely on these tables (per OBBBA) as interim guidance for material assistance cost ratio calculations pending Treasury issuance of formal safe harbor tables required by OBBBA." },
   ],
 };
 
@@ -226,6 +237,8 @@ const REF_CATEGORIES = [
   { value: "nprm",     label: "Notices of Proposed Rulemaking", short: "NPRM",       color: "#9b72cf", group: "Guidance" },
   { value: "plr",      label: "Private Letter Rulings",         short: "PLR",        color: "#b85c5c", group: "Rulings" },
   { value: "cca",      label: "Chief Counsel Advice",           short: "CCA",        color: "#d4836a", group: "Rulings" },
+  { value: "legis",    label: "Legislation",                   short: "Law",        color: "#7e6bc4", group: "Other" },
+  { value: "eo",       label: "Executive Orders",              short: "E.O.",       color: "#b85c5c", group: "Other" },
   { value: "other",    label: "Other Authority",                short: "Other",      color: "#888",    group: "Other" },
 ];
 
@@ -238,6 +251,44 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const inputStyle = {width:"100%",background:"#0f1219",border:"1px solid #2e3244",borderRadius:"6px",padding:".55rem .7rem",color:"#d4cfc5",fontSize:".88rem",outline:"none",boxSizing:"border-box"};
 const btnPrimary = {background:"#c9913d",color:"#0f1219",border:"none",borderRadius:"6px",padding:".55rem 1.2rem",fontWeight:700,cursor:"pointer",fontSize:".85rem",letterSpacing:".03em"};
 const btnGhost   = {background:"transparent",color:"#888",border:"1px solid #2e3244",borderRadius:"6px",padding:".55rem 1rem",cursor:"pointer",fontSize:".85rem"};
+
+// ─── Support Banner ───────────────────────────────────────────────────────────
+const BANNER_KEY = "pfs-banner-dismissed";
+function SupportBanner({ alwaysShow }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (alwaysShow) { setVisible(true); return; }
+    try {
+      const last = localStorage.getItem(BANNER_KEY);
+      const today = new Date().toDateString();
+      if (last !== today) setVisible(true);
+    } catch { setVisible(true); }
+  }, [alwaysShow]);
+  const dismiss = () => {
+    setVisible(false);
+    if (!alwaysShow) {
+      try { localStorage.setItem(BANNER_KEY, new Date().toDateString()); } catch {}
+    }
+  };
+  if (!visible) return null;
+  return (
+    <div style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"10px",padding:"1rem 1.25rem",marginBottom:"1.75rem",display:"flex",alignItems:"center",gap:"1.25rem",flexWrap:"wrap",position:"relative"}}>
+      <button onClick={dismiss} style={{position:"absolute",top:".5rem",right:".6rem",background:"none",border:"none",color:"#3a3e55",cursor:"pointer",fontSize:"1rem",lineHeight:1,padding:"0"}}>×</button>
+      <div style={{fontSize:"1.4rem",flexShrink:0}}>☕</div>
+      <div style={{flex:1,minWidth:"200px"}}>
+        <div style={{color:"#d4cfc5",fontSize:".85rem",fontWeight:600,marginBottom:".2rem"}}>Keep this reference guide current &amp; free</div>
+        <div style={{color:"#5a5f78",fontSize:".78rem"}}>Tax rules change constantly. If this saves you time, please consider a small contribution.</div>
+      </div>
+      <div style={{display:"flex",gap:".6rem",flexWrap:"wrap",alignItems:"center",flexShrink:0}}>
+        <a href="https://venmo.com/u/John-Marciano-13" target="_blank" rel="noreferrer"
+          style={{display:"flex",alignItems:"center",gap:".4rem",background:"#008CFF",color:"#fff",borderRadius:"6px",padding:".4rem .9rem",fontWeight:700,fontSize:".78rem",textDecoration:"none",whiteSpace:"nowrap"}}>
+          💙 Venmo
+        </a>
+        <span style={{color:"#4a4f66",fontSize:".78rem",whiteSpace:"nowrap"}}>or Zelle <strong style={{color:"#7a8099"}}>716-609-8020</strong></span>
+      </div>
+    </div>
+  );
+}
 
 function Modal({ title, onClose, children }) {
   return (
@@ -402,8 +453,9 @@ function SandboxDetail({ sandbox, onBack, onUpdate }) {
 function BookView() {
   return (
     <div style={{maxWidth:"860px",margin:"0 auto",padding:"2rem 0"}}>
+
       {/* Hero */}
-      <div style={{display:"flex",gap:"3.5rem",alignItems:"flex-start",flexWrap:"wrap",marginBottom:"3.5rem"}}>
+      <div style={{display:"flex",gap:"3.5rem",alignItems:"flex-start",flexWrap:"wrap",marginBottom:"3rem"}}>
         {/* Book cover */}
         <div style={{flexShrink:0}}>
           <div style={{position:"relative",display:"inline-block"}}>
@@ -416,67 +468,63 @@ function BookView() {
             />
             <div style={{display:"none",width:"200px",height:"270px",background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"4px",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"1rem",position:"relative"}}>
               <span style={{fontSize:"2.5rem"}}>📚</span>
-              <span style={{color:"#555",fontSize:".75rem",textAlign:"center",padding:"0 1rem"}}>Cover image</span>
             </div>
           </div>
-          <a
-            href="https://www.amazon.com/dp/1974310108"
-            target="_blank" rel="noreferrer"
-            style={{display:"block",marginTop:"1rem",textAlign:"center",background:"#f90",color:"#111",borderRadius:"6px",padding:".45rem .9rem",fontWeight:700,fontSize:".8rem",textDecoration:"none",width:"200px",boxSizing:"border-box"}}
-          >View on Amazon</a>
+          <a href="https://www.amazon.com/dp/1974310108" target="_blank" rel="noreferrer"
+            style={{display:"block",marginTop:"1rem",textAlign:"center",background:"#f90",color:"#111",borderRadius:"6px",padding:".45rem .9rem",fontWeight:700,fontSize:".8rem",textDecoration:"none",width:"200px",boxSizing:"border-box"}}>
+            Original on Amazon
+          </a>
         </div>
 
         {/* Text */}
         <div style={{flex:1,minWidth:"260px"}}>
-          <div style={{display:"inline-block",padding:".25rem .75rem",borderRadius:"4px",background:"#4a9d7f22",border:"1px solid #4a9d7f55",color:"#4a9d7f",fontSize:".72rem",fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",marginBottom:"1.25rem"}}>
-            Now Updated · Expanded · Free Online
+          <div style={{display:"inline-block",padding:".3rem .85rem",borderRadius:"4px",background:"#c9913d22",border:"1px solid #c9913d66",color:"#c9913d",fontSize:".72rem",fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",marginBottom:"1.1rem"}}>
+            🏆 Bestselling Reference — Now Free &amp; Updated Online
           </div>
-          <h1 style={{margin:"0 0 .75rem",fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"2.1rem",fontWeight:700,color:"#e8dcc8",lineHeight:1.2}}>
-            Renewable Power Financing:<br/>
-            <span style={{color:"#c9913d"}}>Tax Credit Reference Guide</span>
+          <h1 style={{margin:"0 0 .5rem",fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"2.2rem",fontWeight:700,color:"#e8dcc8",lineHeight:1.15}}>
+            You can get everything<br/>from the book — <span style={{color:"#c9913d"}}>right here.</span>
           </h1>
-          <p style={{margin:"0 0 .5rem",color:"#7a8099",fontSize:".88rem"}}>John J. Marciano III</p>
-          <p style={{margin:"0 0 1.75rem",color:"#4a4f66",fontSize:".8rem"}}>Originally published August 2017 · Expanded &amp; maintained online at ProjectFinance.School</p>
-
-          <p style={{margin:"0 0 1.25rem",color:"#9aa0bc",fontSize:".95rem",lineHeight:1.7}}>
-            The definitive compilation of tax materials for renewable power project financing — IRC sections, Treasury regulations, IRS safe harbors, revenue rulings, notices, and private letter rulings, all in one place.
-          </p>
-          <p style={{margin:"0 0 1.75rem",color:"#9aa0bc",fontSize:".95rem",lineHeight:1.7}}>
-            The print edition covered the core framework through 2017. This online edition adds the full IRA 2022 credit stack — §§48E, 45Y, 6417, 6418, and all the adder guidance on energy communities, domestic content, low-income communities, FEOC, and prevailing wage &amp; apprenticeship — and will continue to be updated as new guidance is issued.
+          <p style={{margin:"0 0 1.5rem",color:"#5a5f78",fontSize:".88rem"}}>
+            <em>Renewable Power Financing: Tax Credit Reference Guide</em> · John J. Marciano III · First published 2017
           </p>
 
-          <div style={{display:"flex",gap:".75rem",flexWrap:"wrap"}}>
-            <div style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:".9rem 1.2rem",flex:1,minWidth:"130px"}}>
-              <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.6rem",fontWeight:700,color:"#c9913d",lineHeight:1}}>120+</div>
-              <div style={{fontSize:".75rem",color:"#5a5f78",marginTop:".25rem"}}>Authority references</div>
-            </div>
-            <div style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:".9rem 1.2rem",flex:1,minWidth:"130px"}}>
-              <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.6rem",fontWeight:700,color:"#c9913d",lineHeight:1}}>IRA</div>
-              <div style={{fontSize:".75rem",color:"#5a5f78",marginTop:".25rem"}}>2022 fully covered</div>
-            </div>
-            <div style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:".9rem 1.2rem",flex:1,minWidth:"130px"}}>
-              <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.6rem",fontWeight:700,color:"#c9913d",lineHeight:1}}>Free</div>
-              <div style={{fontSize:".75rem",color:"#5a5f78",marginTop:".25rem"}}>Always, right here</div>
-            </div>
+          <p style={{margin:"0 0 1rem",color:"#9aa0bc",fontSize:".95rem",lineHeight:1.75}}>
+            The Amazon edition was the definitive compilation of renewable energy tax credit authority when it was published. <strong style={{color:"#d4cfc5"}}>This site is its living successor.</strong> Every IRC section, Treasury regulation, IRS safe harbor, revenue ruling, notice, and PLR from the book is here — plus everything that's happened since.
+          </p>
+          <p style={{margin:"0 0 1.75rem",color:"#9aa0bc",fontSize:".95rem",lineHeight:1.75}}>
+            <strong style={{color:"#d4cfc5"}}>But wait — there's more.</strong> The print edition couldn't cover what came next: the full IRA 2022 credit stack, the 2025 One Big Beautiful Bill Act, and the Trump administration's executive orders reshaping the ITC and PTC landscape in real time.
+          </p>
+
+          <div style={{display:"flex",gap:".65rem",flexWrap:"wrap"}}>
+            {[["📖","The Book","Original content"],["⚡","IRA 2022","Full credit stack"],["🏛️","OBBBA 2025","New law covered"],["📋","EOs","Trump exec orders"],["🔄","Live","Updated as rules change"]].map(([icon,label,sub])=>(
+              <div key={label} style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:".75rem 1rem",textAlign:"center",minWidth:"90px"}}>
+                <div style={{fontSize:"1.2rem"}}>{icon}</div>
+                <div style={{fontWeight:700,color:"#d4cfc5",fontSize:".78rem",marginTop:".25rem"}}>{label}</div>
+                <div style={{color:"#4a4f66",fontSize:".68rem",marginTop:".1rem"}}>{sub}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* What's covered */}
       <div style={{borderTop:"1px solid #1a1e2e",paddingTop:"2.5rem",marginBottom:"2.5rem"}}>
-        <h2 style={{margin:"0 0 1.5rem",fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.4rem",color:"#e8dcc8"}}>What's Covered</h2>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:"1rem"}}>
+        <h2 style={{margin:"0 0 .4rem",fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.5rem",color:"#e8dcc8"}}>What's in the Quick Reference tab</h2>
+        <p style={{margin:"0 0 1.5rem",color:"#5a5f78",fontSize:".85rem"}}>Everything below is one click away in the Quick Reference tab — organized, searchable, linked.</p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:"1rem"}}>
           {[
-            ["⚡","Tax Credit Framework","§§38, 45, 48, 48E, 45Y — current and pre-1986 provisions"],
-            ["🏗️","IRA 2022 Adders","Energy community, domestic content, low-income, FEOC, PWA"],
-            ["💸","Monetization","§6417 direct pay · §6418 credit transfer"],
-            ["🔄","Tax Equity Structures","Partnership flip · sale-leaseback · inverted lease safe harbors"],
-            ["📋","Start of Construction","Full Notice series 2013–2017 and continuity safe harbors"],
-            ["📜","30+ PLRs","Placed-in-service, storage, rooftop, carport, tribal, related-party"],
+            ["⚡","Core Tax Credit Framework","§§38, 45, 48, 46 (old) — current and pre-1986 ITC/PTC provisions and regs"],
+            ["🆕","IRA 2022 Tech-Neutral Credits","§§48E (CEIC) and 45Y (CEPTC) replacing §§48/45 for post-2024 projects"],
+            ["💸","Monetization","§6417 direct pay and §6418 credit transfer — final regs and initial guidance"],
+            ["🏗️","IRA Adders","Energy community · domestic content · low-income communities · FEOC · PWA"],
+            ["🏛️","OBBBA 2025","Wind/solar phase-out acceleration · FEOC expansion · domestic content fix · bonus depreciation restored"],
+            ["📋","Start of Construction","Notice series 2013–2017 + post-OBBBA BOC Executive Order (July 7, 2025)"],
+            ["🔄","Tax Equity Structures","Partnership flip · sale-leaseback · inverted lease — Rev. Proc. safe harbors"],
+            ["📜","30+ PLRs & CCAs","Placed-in-service · storage · rooftop · carport · tribal · related-party · satellite"],
           ].map(([icon,title,desc])=>(
             <div key={title} style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:"1.1rem"}}>
-              <div style={{fontSize:"1.4rem",marginBottom:".5rem"}}>{icon}</div>
-              <div style={{fontWeight:600,color:"#d4cfc5",fontSize:".88rem",marginBottom:".35rem"}}>{title}</div>
+              <div style={{fontSize:"1.3rem",marginBottom:".45rem"}}>{icon}</div>
+              <div style={{fontWeight:600,color:"#d4cfc5",fontSize:".88rem",marginBottom:".3rem"}}>{title}</div>
               <div style={{color:"#4e5570",fontSize:".78rem",lineHeight:1.5}}>{desc}</div>
             </div>
           ))}
@@ -484,6 +532,7 @@ function BookView() {
       </div>
 
       {/* Say Hello – Infocast */}
+      <SupportBanner alwaysShow={true} />
       <div style={{background:"linear-gradient(135deg,#181c25 0%,#1a1f2e 100%)",border:"1px solid #2a2e3f",borderRadius:"10px",padding:"1.4rem 1.75rem",marginBottom:"1.25rem",display:"flex",alignItems:"center",gap:"1.5rem",flexWrap:"wrap"}}>
         <div style={{fontSize:"1.8rem",flexShrink:0}}>👋</div>
         <div style={{flex:1,minWidth:"200px"}}>
@@ -533,6 +582,7 @@ function BookView() {
 function SandboxesView({ sandboxes, onOpenSandbox, onAddSandbox, onEditSandbox, onDeleteSandbox }) {
   return (
     <div>
+      <SupportBanner alwaysShow={false} />
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.75rem"}}>
         <div>
           <h2 style={{margin:0,fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.7rem",color:"#e8dcc8"}}>Research Sandboxes</h2>
@@ -606,6 +656,7 @@ function QuickRefView({ quickRefs, onUpdate }) {
     <div>
       {showAdd  && <RefModal onSave={addRef}  onClose={()=>setShowAdd(false)} />}
       {editRef  && <RefModal refItem={editRef} onSave={saveEdit} onClose={()=>setEditRef(null)} />}
+      <SupportBanner alwaysShow={false} />
 
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.75rem"}}>
         <div>
