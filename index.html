@@ -398,6 +398,101 @@ function SandboxDetail({ sandbox, onBack, onUpdate }) {
   );
 }
 
+// ─── Book Promo View ──────────────────────────────────────────────────────────
+function BookView() {
+  return (
+    <div style={{maxWidth:"860px",margin:"0 auto",padding:"2rem 0"}}>
+      {/* Hero */}
+      <div style={{display:"flex",gap:"3.5rem",alignItems:"flex-start",flexWrap:"wrap",marginBottom:"3.5rem"}}>
+        {/* Book cover */}
+        <div style={{flexShrink:0}}>
+          <div style={{position:"relative",display:"inline-block"}}>
+            <div style={{position:"absolute",inset:0,background:"#c9913d",filter:"blur(32px)",opacity:.25,borderRadius:"8px",transform:"translate(6px,10px)"}} />
+            <img
+              src="https://images-na.ssl-images-amazon.com/images/P/1974310108.jpg"
+              alt="Renewable Power Financing: Tax Credit Reference Guide"
+              style={{width:"200px",borderRadius:"4px",position:"relative",boxShadow:"0 8px 40px rgba(0,0,0,.6)"}}
+              onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="flex";}}
+            />
+            <div style={{display:"none",width:"200px",height:"270px",background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"4px",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"1rem",position:"relative"}}>
+              <span style={{fontSize:"2.5rem"}}>📚</span>
+              <span style={{color:"#555",fontSize:".75rem",textAlign:"center",padding:"0 1rem"}}>Cover image</span>
+            </div>
+          </div>
+          <a
+            href="https://www.amazon.com/dp/1974310108"
+            target="_blank" rel="noreferrer"
+            style={{display:"block",marginTop:"1rem",textAlign:"center",background:"#f90",color:"#111",borderRadius:"6px",padding:".45rem .9rem",fontWeight:700,fontSize:".8rem",textDecoration:"none",width:"200px",boxSizing:"border-box"}}
+          >View on Amazon</a>
+        </div>
+
+        {/* Text */}
+        <div style={{flex:1,minWidth:"260px"}}>
+          <div style={{display:"inline-block",padding:".25rem .75rem",borderRadius:"4px",background:"#4a9d7f22",border:"1px solid #4a9d7f55",color:"#4a9d7f",fontSize:".72rem",fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",marginBottom:"1.25rem"}}>
+            Now Updated · Expanded · Free Online
+          </div>
+          <h1 style={{margin:"0 0 .75rem",fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"2.1rem",fontWeight:700,color:"#e8dcc8",lineHeight:1.2}}>
+            Renewable Power Financing:<br/>
+            <span style={{color:"#c9913d"}}>Tax Credit Reference Guide</span>
+          </h1>
+          <p style={{margin:"0 0 .5rem",color:"#7a8099",fontSize:".88rem"}}>John J. Marciano III</p>
+          <p style={{margin:"0 0 1.75rem",color:"#4a4f66",fontSize:".8rem"}}>Originally published August 2017 · Expanded &amp; maintained online at ProjectFinance.School</p>
+
+          <p style={{margin:"0 0 1.25rem",color:"#9aa0bc",fontSize:".95rem",lineHeight:1.7}}>
+            The definitive compilation of tax materials for renewable power project financing — IRC sections, Treasury regulations, IRS safe harbors, revenue rulings, notices, and private letter rulings, all in one place.
+          </p>
+          <p style={{margin:"0 0 1.75rem",color:"#9aa0bc",fontSize:".95rem",lineHeight:1.7}}>
+            The print edition covered the core framework through 2017. This online edition adds the full IRA 2022 credit stack — §§48E, 45Y, 6417, 6418, and all the adder guidance on energy communities, domestic content, low-income communities, FEOC, and prevailing wage &amp; apprenticeship — and will continue to be updated as new guidance is issued.
+          </p>
+
+          <div style={{display:"flex",gap:".75rem",flexWrap:"wrap"}}>
+            <div style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:".9rem 1.2rem",flex:1,minWidth:"130px"}}>
+              <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.6rem",fontWeight:700,color:"#c9913d",lineHeight:1}}>120+</div>
+              <div style={{fontSize:".75rem",color:"#5a5f78",marginTop:".25rem"}}>Authority references</div>
+            </div>
+            <div style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:".9rem 1.2rem",flex:1,minWidth:"130px"}}>
+              <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.6rem",fontWeight:700,color:"#c9913d",lineHeight:1}}>IRA</div>
+              <div style={{fontSize:".75rem",color:"#5a5f78",marginTop:".25rem"}}>2022 fully covered</div>
+            </div>
+            <div style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:".9rem 1.2rem",flex:1,minWidth:"130px"}}>
+              <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.6rem",fontWeight:700,color:"#c9913d",lineHeight:1}}>Free</div>
+              <div style={{fontSize:".75rem",color:"#5a5f78",marginTop:".25rem"}}>Always, right here</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* What's covered */}
+      <div style={{borderTop:"1px solid #1a1e2e",paddingTop:"2.5rem",marginBottom:"2.5rem"}}>
+        <h2 style={{margin:"0 0 1.5rem",fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.4rem",color:"#e8dcc8"}}>What's Covered</h2>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:"1rem"}}>
+          {[
+            ["⚡","Tax Credit Framework","§§38, 45, 48, 48E, 45Y — current and pre-1986 provisions"],
+            ["🏗️","IRA 2022 Adders","Energy community, domestic content, low-income, FEOC, PWA"],
+            ["💸","Monetization","§6417 direct pay · §6418 credit transfer"],
+            ["🔄","Tax Equity Structures","Partnership flip · sale-leaseback · inverted lease safe harbors"],
+            ["📋","Start of Construction","Full Notice series 2013–2017 and continuity safe harbors"],
+            ["📜","30+ PLRs","Placed-in-service, storage, rooftop, carport, tribal, related-party"],
+          ].map(([icon,title,desc])=>(
+            <div key={title} style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:"1.1rem"}}>
+              <div style={{fontSize:"1.4rem",marginBottom:".5rem"}}>{icon}</div>
+              <div style={{fontWeight:600,color:"#d4cfc5",fontSize:".88rem",marginBottom:".35rem"}}>{title}</div>
+              <div style={{color:"#4e5570",fontSize:".78rem",lineHeight:1.5}}>{desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Disclaimer */}
+      <div style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:"1.1rem 1.4rem"}}>
+        <p style={{margin:0,color:"#4a4f66",fontSize:".78rem",lineHeight:1.6}}>
+          <strong style={{color:"#5a5f78"}}>Note:</strong> This text is designed to provide a useful compilation of significant tax materials related to the financing and ownership of renewable power projects. The author is not providing legal or tax advice. Please consult your tax or legal professional if you have specific needs. © John J. Marciano III 2011 (revised, expanded, and updated online 2024–2025). All rights reserved.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Sandboxes Grid ───────────────────────────────────────────────────────────
 function SandboxesView({ sandboxes, onOpenSandbox, onAddSandbox, onEditSandbox, onDeleteSandbox }) {
   return (
@@ -595,7 +690,7 @@ function App() {
             <span style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.4rem",color:"#e8dcc8",letterSpacing:".02em"}}>.School</span>
           </div>
           <nav style={{display:"flex",gap:".25rem",marginLeft:"auto"}}>
-            {[["sandboxes","Sandboxes"],["refs","Quick Reference"]].map(([v,label])=>(
+            {[["book","📖 The Book"],["sandboxes","Sandboxes"],["refs","Quick Reference"]].map(([v,label])=>(
               <button key={v} onClick={()=>{setView(v);setActiveSandbox(null);}}
                 style={{background:view===v?"#181c25":"transparent",border:view===v?"1px solid #2a2e3f":"1px solid transparent",borderRadius:"6px",color:view===v?"#e8dcc8":"#5a5f78",padding:".4rem .9rem",cursor:"pointer",fontSize:".83rem",fontWeight:view===v?600:400,transition:"all .15s"}}>
                 {label}
@@ -606,6 +701,7 @@ function App() {
         </header>
 
         <main style={{flex:1,padding:"2rem",maxWidth:"1100px",width:"100%",margin:"0 auto"}}>
+          {view==="book" && <BookView />}
           {view==="sandboxes"&&!activeSandbox && <SandboxesView sandboxes={data.sandboxes} onOpenSandbox={setActiveSandbox} onAddSandbox={()=>setShowAddSandbox(true)} onEditSandbox={setEditSandbox} onDeleteSandbox={deleteSandbox} />}
           {view==="sandboxes"&&activeSandbox  && <SandboxDetail sandbox={data.sandboxes.find(s=>s.id===activeSandbox.id)||activeSandbox} onBack={()=>setActiveSandbox(null)} onUpdate={updateSandboxItems} />}
           {view==="refs" && <QuickRefView quickRefs={data.quickRefs} onUpdate={updateRefs} />}
