@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProjectFinance.School – Research Hub</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #0f1219; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f1219; }
+    ::-webkit-scrollbar-thumb { background: #2a2e3f; border-radius: 3px; }
+    select option, select optgroup { background: #181c25; color: #d4cfc5; }
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+
+// ─── Storage helpers ──────────────────────────────────────────────────────────
+const STORAGE_KEY = "tax-hub-data-v3";
+
+const IRS_BASE = "https://www.irs.gov/pub/irs-drop/";
+const CORNELL_BASE = "https://www.law.cornell.edu/uscode/text/26/";
+
+const defaultData = {
+  sandboxes: [
+    {
+      id: "s1",
+      name: "Renewable Power Financing",
+      color: "#c9913d",
+      description: "Tax credit structures – partnership flips, sale-leasebacks, inverted leases",
+      items: [
+        { id: "i1", type: "book", title: "Renewable Power Financing: Tax Credit Reference Guide – Marciano (2017)", url: "", notes: "Primary reference text. Covers §§38, 45, 48, old §46/47/48, regs, Rev. Procs., Notices, PLRs.", date: "2017-08-15" },
+        { id: "i2", type: "article", title: "Solar Structures Article – Marciano (Dec. 2019)", url: "", notes: "Follow-on article covering solar-specific structures and updates.", date: "2019-12-24" },
+      ],
+    },
+  ],
+  quickRefs: [
+    // ── Current IRC Sections ──────────────────────────────────────────────────
+    { id: "r_38",    category: "irc",     citation: "§ 38",        title: "General Business Credit",                                       url: `${CORNELL_BASE}38`,     notes: "Framework credit provision; aggregates component credits including §§45 and 48." },
+    { id: "r_39",    category: "irc",     citation: "§ 39",        title: "Carryback and Carryforward of Unused Credits",                  url: `${CORNELL_BASE}39`,     notes: "Carry back 1 year; carry forward 20 years." },
+    { id: "r_45",    category: "irc",     citation: "§ 45",        title: "Electricity Produced from Certain Renewable Resources (PTC)",   url: `${CORNELL_BASE}45`,     notes: "Production tax credit. Wind, biomass, landfill gas, hydro, geothermal, marine. Claimed over 10 years on production sold to third parties." },
+    { id: "r_46",    category: "irc",     citation: "§ 46",        title: "Amount of Credit (ITC components)",                             url: `${CORNELL_BASE}46`,     notes: "Lists component credits comprising the investment credit, including the energy credit under §48." },
+    { id: "r_48",    category: "irc",     citation: "§ 48",        title: "Energy Credit (ITC)",                                           url: `${CORNELL_BASE}48`,     notes: "Investment tax credit. Solar, fuel cell, CHP. Up-front one-time credit as % of cost. Lease passthrough election under §50(d)(5)." },
+    { id: "r_49",    category: "irc",     citation: "§ 49",        title: "At-risk Rules",                                                 url: `${CORNELL_BASE}49`,     notes: "Limits ITC basis to amount at risk." },
+    { id: "r_50",    category: "irc",     citation: "§ 50",        title: "Other Special Rules",                                           url: `${CORNELL_BASE}50`,     notes: "Recapture, basis reduction (½ credit), 3-month rule §50(d)(4), lease passthrough §50(d)(5), tax-exempt use disallowance §50(b)(3)&(4)." },
+    { id: "r_59e",   category: "irc",     citation: "§ 59(e)",     title: "Optional 10-Year Writeoff of IDCs",                             url: `${CORNELL_BASE}59`,     notes: "Election to amortize intangible drilling costs (including geothermal IDCs) over 60 months rather than expensing." },
+    { id: "r_168g",  category: "irc",     citation: "§ 168(g)",    title: "Alternative Depreciation System (ADS)",                         url: `${CORNELL_BASE}168`,    notes: "ADS depreciation schedule. Applies where tax-exempt use property rules are triggered." },
+    { id: "r_168h",  category: "irc",     citation: "§ 168(h)",    title: "Tax-exempt Use Property",                                       url: `${CORNELL_BASE}168`,    notes: "Forces ADS (12-yr straight-line for wind/solar) when tax-exempt/government entity owns or uses property." },
+    { id: "r_168k",  category: "irc",     citation: "§ 168(k)",    title: "Bonus Depreciation",                                            url: `${CORNELL_BASE}168`,    notes: "Special depreciation bonus allowing immediate deduction of 50% (or 100%) of depreciable basis." },
+    { id: "r_197f9", category: "irc",     citation: "§ 197(f)(9)", title: "Amortization of Goodwill – Anti-churning",                      url: `${CORNELL_BASE}197`,    notes: "Anti-churning rules for amortization of intangibles; relevant to partnership transactions." },
+    { id: "r_263c",  category: "irc",     citation: "§ 263(c)",    title: "Intangible Drilling Costs – Immediate Expensing Election",      url: `${CORNELL_BASE}263`,    notes: "IDC expensing election; geothermal well drilling costs may be deducted immediately." },
+    { id: "r_263A",  category: "irc",     citation: "§ 263A",      title: "UNICAP – Uniform Capitalization of Costs",                      url: `${CORNELL_BASE}263`,    notes: "Requires capitalization of direct and indirect costs; affects ITC basis calculation." },
+    { id: "r_266",   category: "irc",     citation: "§ 266",       title: "Carrying Charges – Election to Capitalize",                     url: `${CORNELL_BASE}266`,    notes: "Election to capitalize otherwise deductible carrying charges; affects ITC cost basis." },
+    { id: "r_7701e", category: "irc",     citation: "§ 7701(e)",   title: "Service Contracts vs. Leases",                                  url: `${CORNELL_BASE}7701`,   notes: "Governs whether a contract for the sale of power is treated as a lease. Sale of power to tax-exempt entity not 'use' if arrangement is not a lease." },
+    { id: "r_7701o", category: "irc",     citation: "§ 7701(o)",   title: "Economic Substance Doctrine – Codification",                    url: `${CORNELL_BASE}7701`,   notes: "Codifies the economic substance doctrine. Relevant to tax equity structures and partnership flips." },
+    // §48 IRA Adder Provisions
+    { id: "r_48a9",  category: "irc", citation: "§ 48(a)(9)",  title: "§48 Energy Community Bonus Credit",            url: `${CORNELL_BASE}48`, notes: "IRA 2022. 10 percentage-point adder (or 2pp below PWA threshold) for projects placed in service in energy communities. See Notice 2023-29, 2023-45, 2024-30." },
+    { id: "r_48a14", category: "irc", citation: "§ 48(a)(14)", title: "§48 Domestic Content Bonus Credit",            url: `${CORNELL_BASE}48`, notes: "IRA 2022. 10 percentage-point adder (or 2pp below PWA threshold) for projects meeting domestic content requirements. See Notice 2023-38, 2023-47, 2024-9, 2024-41." },
+    { id: "r_48e_s", category: "irc", citation: "§ 48(e)",     title: "§48 Low-Income Communities Bonus Credit",      url: `${CORNELL_BASE}48`, notes: "IRA 2022. Up to 20 percentage-point adder for projects in low-income communities or on tribal land, or serving low-income households. Annual allocation program. See Notice 2023-17, Rev. Proc. 2023-27." },
+    // §48E – Clean Electricity Investment Credit (IRA 2022)
+    { id: "r_48E",      category: "irc", citation: "§ 48E",       title: "Clean Electricity Investment Credit (CEIC)",   url: `${CORNELL_BASE}48E`, notes: "IRA 2022 (tech-neutral ITC). Replaces §48 for projects beginning construction after 12/31/2024 (or later). Base credit 6%; 30% with PWA requirements. Applies to any zero-emissions facility." },
+    { id: "r_48Eb",     category: "irc", citation: "§ 48E(b)",    title: "§48E Energy Community Bonus Credit",           url: `${CORNELL_BASE}48E`, notes: "10 pp adder (or 2pp below PWA threshold) for §48E projects in energy communities. Mirrors §48(a)(9)." },
+    { id: "r_48Ed",     category: "irc", citation: "§ 48E(d)",    title: "§48E Domestic Content Bonus Credit",           url: `${CORNELL_BASE}48E`, notes: "10 pp adder (or 2pp below PWA threshold) for §48E projects meeting domestic content requirements. Mirrors §48(a)(14)." },
+    { id: "r_48Eh",     category: "irc", citation: "§ 48E(h)",    title: "§48E Low-Income Communities Bonus Credit",     url: `${CORNELL_BASE}48E`, notes: "Up to 20 pp adder for §48E projects in low-income communities / tribal land / serving low-income households. Annual DOE allocation program." },
+    { id: "r_48Efoc",   category: "irc", citation: "§ 48E(d)(3)", title: "§48E FEOC Restriction",                        url: `${CORNELL_BASE}48E`, notes: "Restricts domestic content bonus for §48E projects using components from Foreign Entities of Concern (FEOC). See Notice 2024-60." },
+    // §6417 & §6418 – IRA Monetization Provisions
+    { id: "r_6417",     category: "irc", citation: "§ 6417",      title: "Elective Payment of Applicable Credits (Direct Pay)", url: `${CORNELL_BASE}6417`, notes: "IRA 2022. Allows tax-exempt entities, state/local governments, tribal governments, and certain other entities to elect to receive applicable credits as direct payments. Also available for §48E, §45Y, §45X. See Notice 2022-50, T.D. 9993." },
+    { id: "r_6418",     category: "irc", citation: "§ 6418",      title: "Transfer of Certain Credits",                 url: `${CORNELL_BASE}6418`, notes: "IRA 2022. Allows eligible taxpayers to transfer (sell) all or a portion of eligible credits (including §48, §48E, §45, §45Y, §45X) to an unrelated taxpayer for cash. Cash payment excluded from income; no deduction for transferee. See Notice 2022-50, T.D. 9993." },
+    // §45Y – Clean Electricity Production Tax Credit (IRA 2022, tech-neutral PTC)
+    { id: "r_45Y",      category: "irc", citation: "§ 45Y",       title: "Clean Electricity Production Tax Credit (CEPTC)",      url: `${CORNELL_BASE}45Y`, notes: "IRA 2022 (tech-neutral PTC). Replaces §45 for facilities beginning construction after 12/31/2024 (or later). Base credit 0.3¢/kWh; 1.5¢/kWh with PWA requirements. Applies to any zero-emissions electricity generating facility." },
+    { id: "r_45Yb3",    category: "irc", citation: "§ 45Y(b)(3)", title: "§45Y Domestic Content Bonus Credit",                   url: `${CORNELL_BASE}45Y`, notes: "10% adder on the §45Y credit amount for projects meeting domestic content requirements. Shares rules with §48E(d). See Notice 2023-38, 2023-47, 2024-9, 2024-41, T.D. 10015." },
+    { id: "r_45Yg11",   category: "irc", citation: "§ 45Y(g)(4)", title: "§45Y Energy Community Bonus Credit",                   url: `${CORNELL_BASE}45Y`, notes: "10% adder on the §45Y credit amount for projects in energy communities. Shares rules with §48E(b). See Notice 2023-29, 2023-45, 2024-30." },
+    // PWA Requirements
+    { id: "r_45_pwa",   category: "irc", citation: "§§ 45(b)(7)-(8), 48(a)(10)", title: "Prevailing Wage & Apprenticeship (PWA) Requirements", url: "", notes: "IRA 2022. Required to claim full 30% ITC (vs. 6% base) and full PTC rates under §§48, 48E, 45, 45Y. Applies to construction, alteration, and repair. See Notice 2022-61, T.D. 10005." },
+    // ── Old / Repealed IRC Sections ───────────────────────────────────────────
+    { id: "r_46old", category: "irc_old", citation: "§ 46 (OLD)",  title: "Amount of Credit (Pre-1986 Investment Credit)",                 url: "", notes: "Pre-TRA 1986 investment credit provision. Governs old ITC allocations and recapture in legacy structures." },
+    { id: "r_47old", category: "irc_old", citation: "§ 47 (OLD)",  title: "Certain Dispositions of Section 38 Property",                  url: "", notes: "Pre-1986 recapture provision for ITC on disposition of §38 property." },
+    { id: "r_48old", category: "irc_old", citation: "§ 48 (OLD)",  title: "Definitions; Special Rules (Energy Credit – Pre-1986)",        url: "", notes: "Pre-1986 ITC definitions. Governs old-law structures and legacy PLRs issued under old §48." },
+    // ── Treasury Regulations ──────────────────────────────────────────────────
+    { id: "rr_48_1",    category: "reg", citation: "Treas. Reg. § 1.48-1",              title: "Definition of Section 38 Property",                          url: "", notes: "" },
+    { id: "rr_48_2",    category: "reg", citation: "Treas. Reg. § 1.48-2",              title: "New Section 38 Property",                                    url: "", notes: "" },
+    { id: "rr_48_4",    category: "reg", citation: "Treas. Reg. § 1.48-4",              title: "Lease Passthrough Election",                                 url: "", notes: "Allows owner to pass ITC to lessee who is the first user of the property." },
+    { id: "rr_48_4p",   category: "reg", citation: "Prop. Reg. § 1.48-4",               title: "Lease Passthrough Election (Proposed)",                      url: "", notes: "Proposed version of the lease passthrough election regulations." },
+    { id: "rr_48_9",    category: "reg", citation: "Treas. Reg. § 1.48-9",              title: "Definition of Energy Property",                              url: "", notes: "Defines qualifying energy property for ITC purposes. Key for determining ITC eligibility." },
+    { id: "rr_59_1",    category: "reg", citation: "Treas. Reg. § 1.59-1",              title: "Writeoff of Certain Tax Preferences",                        url: "", notes: "" },
+    { id: "rr_168j",    category: "reg", citation: "Treas. Reg. § 1.168(j)-1T",         title: "Tax-Exempt Entity Leasing Rules (Temp.)",                    url: "", notes: "Q&A format temporary regulations on tax-exempt use property leasing." },
+    { id: "rr_168k",    category: "reg", citation: "Treas. Reg. § 1.168(k)-1",          title: "Bonus Depreciation Regulations",                             url: "", notes: "" },
+    { id: "rr_197",     category: "reg", citation: "Treas. Reg. § 1.197-2(h)(6)",       title: "Anti-Churning – Goodwill Amortization",                      url: "", notes: "" },
+    { id: "rr_263A_1",  category: "reg", citation: "Treas. Reg. § 1.263A-1",            title: "Uniform Capitalization of Costs",                            url: "", notes: "UNICAP; indirect cost capitalization rules relevant to ITC basis." },
+    { id: "rr_266_1",   category: "reg", citation: "Treas. Reg. § 1.266-1",             title: "Taxes and Carrying Charges – Capitalization Election",        url: "", notes: "" },
+    { id: "rr_612_5",   category: "reg", citation: "Treas. Reg. § 1.612-5",             title: "Capitalization – Geothermal Wells",                          url: "", notes: "Split treatment of geothermal IDCs between depletable and depreciable assets." },
+    { id: "rr_704_b",   category: "reg", citation: "Treas. Reg. § 1.704-1(b)(2)(iv)(j)","title": "Partnership Capital Account – Credit Recapture",            url: "", notes: "Capital account adjustment rule relevant to ITC recapture in partnership structures." },
+    { id: "rr_704_b2",  category: "reg", citation: "Treas. Reg. § 1.704-1(b)(4)(ii)",  title: "Partnership Allocation – Tax Credits",                       url: "", notes: "Special rule for allocating tax credits in partnerships." },
+    { id: "rr_1502_3",  category: "reg", citation: "Treas. Reg. § 1.1502-3",            title: "Consolidated Tax Credits",                                   url: "", notes: "Rules for claiming general business credits in a consolidated group." },
+    // §48 IRA Regs
+    { id: "rr_48_13",   category: "reg", citation: "Treas. Reg. § 1.48-13",             title: "§48 Domestic Content Bonus – Final Regs (T.D. 10015, 2024)",  url: "https://www.federalregister.gov/documents/2024/10/28/2024-24511/domestic-content-bonus-credit-amounts-under-sections-45-45y-48-and-48e", notes: "Finalized domestic content bonus credit rules for §§48, 48E, 45, 45Y. October 2024." },
+    { id: "rr_48e_1p",  category: "reg", citation: "Prop. Reg. § 1.48(e)-1",            title: "§48 Low-Income Communities Bonus – Proposed Regs",            url: "", notes: "Proposed regulations governing the §48(e) low-income communities bonus credit allocation program." },
+    { id: "rr_48E_1",   category: "reg", citation: "Prop. Reg. § 1.48E-1",              title: "§48E Clean Electricity Investment Credit – Proposed Regs",    url: "", notes: "Proposed regs under §48E (tech-neutral ITC). Covers qualification, adders, and transition from §48." },
+    { id: "rr_45Y_1",   category: "reg", citation: "Prop. Reg. § 1.45Y-1",              title: "§45Y Clean Electricity PTC – Proposed Regs",          url: "", notes: "Proposed regulations under §45Y (tech-neutral PTC). Covers qualifying facilities, zero-emissions determination, adder interaction, and transition from §45." },
+    // §6417 / §6418 Final Regs
+    { id: "rr_6417_1",  category: "reg", citation: "Treas. Reg. § 1.6417-1 et seq.",    title: "Elective Payment – Final Regs (T.D. 9993, 2024)",             url: "https://www.federalregister.gov/documents/2024/03/11/2024-04848/elective-payment-of-applicable-credits-and-transfer-of-certain-credits", notes: "Final regulations on elective direct pay under §6417 for tax-exempt and governmental entities. March 2024." },
+    { id: "rr_6418_1",  category: "reg", citation: "Treas. Reg. § 1.6418-1 et seq.",    title: "Credit Transfer – Final Regs (T.D. 9993, 2024)",              url: "https://www.federalregister.gov/documents/2024/03/11/2024-04848/elective-payment-of-applicable-credits-and-transfer-of-certain-credits", notes: "Final regulations on transferability of eligible credits under §6418. Anti-abuse rules; registration requirements. March 2024." },
+    // PWA Final Regs
+    { id: "rr_pwa",     category: "reg", citation: "Treas. Reg. § 1.45-12 et seq.",     title: "Prevailing Wage & Apprenticeship – Final Regs (T.D. 10005, 2024)", url: "", notes: "Final PWA regulations. Required to receive full §48 / §48E credit rates. Covers construction, alteration, and repair workers." },
+    // ── Old Section Regulations ───────────────────────────────────────────────
+    { id: "ro_46_1",  category: "reg_old", citation: "Treas. Reg. § 1.46-1",  title: "Determination of Amount (Old §46)",                  url: "", notes: "Regulation under pre-TRA 1986 §46. Governs determination of investment credit amount." },
+    { id: "ro_46_2",  category: "reg_old", citation: "Treas. Reg. § 1.46-2",  title: "Carryback and Carryover of Unused Credit (Old §46)", url: "", notes: "" },
+    { id: "ro_46_3",  category: "reg_old", citation: "Treas. Reg. § 1.46-3",  title: "Qualified Investment (Old §46)",                     url: "", notes: "" },
+    { id: "ro_46_4",  category: "reg_old", citation: "Treas. Reg. § 1.46-4",  title: "Limitations – Certain Persons (Old §46)",            url: "", notes: "" },
+    { id: "ro_46_5",  category: "reg_old", citation: "Treas. Reg. § 1.46-5",  title: "Qualified Progress Expenditures (Old §46)",          url: "", notes: "" },
+    { id: "ro_47_1",  category: "reg_old", citation: "Treas. Reg. § 1.47-1",  title: "Recapture of Credit Allowed by §38 (Old §47)",       url: "", notes: "Recapture rules under pre-1986 law." },
+    { id: "ro_47_2",  category: "reg_old", citation: "Treas. Reg. § 1.47-2",  title: "Disposition and Cessation (Old §47)",                url: "", notes: "" },
+    { id: "ro_47_3",  category: "reg_old", citation: "Treas. Reg. § 1.47-3",  title: "Exceptions to Recapture (Old §47)",                  url: "", notes: "" },
+    { id: "ro_47_6",  category: "reg_old", citation: "Treas. Reg. § 1.47-6",  title: "Partnerships (Old §47)",                            url: "", notes: "Partnership-specific recapture rules under old law." },
+    // ── Revenue Procedures ────────────────────────────────────────────────────
+    { id: "rp_2001_28", category: "revproc", citation: "Rev. Proc. 2001-28",  title: "True Lease Safe Harbor",                     url: "",                                    notes: "IRS safe harbor guidelines for leveraged leases treated as true leases for tax purposes. 2001-1 CB 1156." },
+    { id: "rp_2007_65", category: "revproc", citation: "Rev. Proc. 2007-65",  title: "Wind Partnership Flip Safe Harbor",          url: `${IRS_BASE}rp-07-65.pdf`,             notes: "Safe harbor for partnership flip structures in wind projects. 2007-45 IRB 967. As revised by Ann. 2007-112 and Ann. 2009-69." },
+    { id: "rp_2014_12", category: "revproc", citation: "Rev. Proc. 2014-12",  title: "Inverted Lease Safe Harbor",                 url: `${IRS_BASE}rp-14-12.pdf`,             notes: "Safe harbor for inverted lease (pass-through lease) structures. 2014-3 I.R.B. 415 (12/30/2013)." },
+    { id: "rp_2017_19", category: "revproc", citation: "Rev. Proc. 2017-19",  title: "Energy Savings Contract Safe Harbor",        url: "",                                    notes: "Safe harbor treatment for energy savings performance contracts." },
+    { id: "rp_2023_27", category: "revproc", citation: "Rev. Proc. 2023-27",  title: "§48(e) Low-Income Communities Bonus – Application Procedures", url: `${IRS_BASE}rp-23-27.pdf`, notes: "Establishes application procedures for the §48(e) low-income communities bonus credit allocation program administered by DOE." },
+    { id: "rp_2023_33", category: "revproc", citation: "Rev. Proc. 2023-33",  title: "§6417 / §6418 – Pre-Filing Registration Procedures",          url: `${IRS_BASE}rp-23-33.pdf`, notes: "Establishes registration requirements for elective pay (§6417) and credit transfer (§6418). Taxpayers must register on IRS Energy Credits Online portal prior to claiming or transferring." },
+    // ── Revenue Rulings ───────────────────────────────────────────────────────
+    { id: "rr_94_31", category: "revrule", citation: "Rev. Rul. 94-31",  title: "Qualified Facility Definition",   url: "", notes: "1994-1 CB 16. Addresses what constitutes a qualifying facility for PTC purposes." },
+    { id: "rr_99_5",  category: "revrule", citation: "Rev. Rul. 99-5",   title: "Partnership Formation",           url: "", notes: "1999-1 CB 434. Tax consequences when a disregarded entity becomes a partnership." },
+    { id: "rr_99_6",  category: "revrule", citation: "Rev. Rul. 99-6",   title: "Partnership Termination",         url: "", notes: "1999-1 CB 432 (1/15/1999). Tax consequences when a partnership becomes a disregarded entity." },
+    // ── Notices ───────────────────────────────────────────────────────────────
+    { id: "n_2008_60", category: "notice", citation: "Notice 2008-60",  title: "Qualified Facility – Definition Guidance",         url: "",                               notes: "2008-30 IRB 178. Guidance on qualified facility definition for PTC." },
+    { id: "n_2013_29", category: "notice", citation: "Notice 2013-29",  title: "Start of Construction – Initial Guidance",         url: `${IRS_BASE}n-13-29.pdf`,         notes: "2013-20 I.R.B. 1085 (4/15/2013). Establishes physical work and 5% safe harbor tests for start of construction." },
+    { id: "n_2013_60", category: "notice", citation: "Notice 2013-60",  title: "Start of Construction – Continuous Efforts",       url: `${IRS_BASE}n-13-60.pdf`,         notes: "2013-44 I.R.B. 431 (9/20/2013). Clarifies continuous construction and continuous efforts requirements." },
+    { id: "n_2014_46", category: "notice", citation: "Notice 2014-46",  title: "Start of Construction – Additional Guidance",      url: `${IRS_BASE}n-14-46.pdf`,         notes: "2014-35 I.R.B. 520 (8/8/2014)." },
+    { id: "n_2015_25", category: "notice", citation: "Notice 2015-25",  title: "Start of Construction – Extension",                url: `${IRS_BASE}n-15-25.pdf`,         notes: "2015-13 I.R.B. 520 (3/11/2015). Extends the continuity safe harbor period." },
+    { id: "n_2016_31", category: "notice", citation: "Notice 2016-31",  title: "Start of Construction – Phase-down & Continuity",  url: `${IRS_BASE}n-16-31.pdf`,         notes: "2016-23 I.R.B. 1025 (5/5/2016). Addresses PTC phase-down interaction with start of construction." },
+    { id: "n_2017_4",  category: "notice", citation: "Notice 2017-4",   title: "Start of Construction – Further Extensions",       url: `${IRS_BASE}n-17-04.pdf`,         notes: "2017-3 I.R.B. (12/15/2016). Further extensions and modifications to start of construction guidance." },
+    // §48 / §48E / PWA – IRA Initial Guidance
+    { id: "n_2022_50", category: "notice", citation: "Notice 2022-50",  title: "§6417 / §6418 – Initial Elective Pay & Transfer Guidance",    url: `${IRS_BASE}n-22-50.pdf`,  notes: "Initial guidance on elective direct pay (§6417) and credit transfer (§6418) under IRA 2022. Requests comments." },
+    { id: "n_2022_61", category: "notice", citation: "Notice 2022-61",  title: "Prevailing Wage & Apprenticeship – Initial Guidance",         url: `${IRS_BASE}n-22-61.pdf`,  notes: "Initial IRS guidance on PWA requirements for §48 / §48E full credit rates under IRA 2022. Provides interim standards pending final regs." },
+    { id: "n_2023_29_ec", category: "notice", citation: "Notice 2023-29",  title: "Energy Community Bonus Credit – Initial Guidance (§48 / §48E)", url: `${IRS_BASE}n-23-29.pdf`,  notes: "Defines 'energy community' (brownfields, MSAs/non-MSAs with fossil fuel employment/unemployment, and coal closure tracts). Applies to §§48, 48E, 45, 45Y." },
+    { id: "n_2023_45", category: "notice", citation: "Notice 2023-45",  title: "Energy Community – Statistical Area Updates",                  url: `${IRS_BASE}n-23-45.pdf`,  notes: "Updates MSA/non-MSA statistical areas and fossil fuel employment data for energy community determinations. Supersedes Appendix of Notice 2023-29." },
+    { id: "n_2024_30", category: "notice", citation: "Notice 2024-30",  title: "Energy Community – Additional Modifications",                  url: `${IRS_BASE}n-24-30.pdf`,  notes: "Further modifications to energy community rules; updates applicable statistical area list; clarifies census tract qualification." },
+    // Domestic Content
+    { id: "n_2023_38", category: "notice", citation: "Notice 2023-38",  title: "Domestic Content Bonus Credit – Initial Guidance (§48 / §48E)", url: `${IRS_BASE}n-23-38.pdf`, notes: "Initial guidance on domestic content bonus under §§48(a)(14), 48E(d), 45(b)(9), 45Y(g)(11). Sets CAPM classification rules and domestic cost percentages." },
+    { id: "n_2023_47", category: "notice", citation: "Notice 2023-47",  title: "Domestic Content – Safe Harbor for Calculating Costs",         url: `${IRS_BASE}n-23-47.pdf`, notes: "Safe harbor allowing taxpayers to use published cost percentage tables (by technology) to determine domestic content satisfaction without tracking individual component costs." },
+    { id: "n_2024_9",  category: "notice", citation: "Notice 2024-9",   title: "Domestic Content – Additional Guidance",                       url: `${IRS_BASE}n-24-09.pdf`, notes: "Provides additional domestic content guidance; addresses phased-in domestic content percentages and transition rules." },
+    { id: "n_2024_41", category: "notice", citation: "Notice 2024-41",  title: "Domestic Content – Updated Safe Harbor & FEOC Interaction",    url: `${IRS_BASE}n-24-41.pdf`, notes: "Updates the domestic content safe harbor cost percentages; addresses interaction with FEOC restrictions for §48E projects." },
+    // Low-Income Communities
+    { id: "n_2023_17", category: "notice", citation: "Notice 2023-17",  title: "§48(e) Low-Income Communities Bonus – Initial Framework",      url: `${IRS_BASE}n-23-17.pdf`, notes: "Establishes the §48(e) low-income communities bonus credit program; describes the four facility categories, 1.8 GW annual capacity limitation, and DOE application process." },
+    // FEOC
+    { id: "n_2024_60", category: "notice", citation: "Notice 2024-60",  title: "FEOC – Foreign Entity of Concern Guidance (§§48E, 45Y)",       url: `${IRS_BASE}n-24-60.pdf`, notes: "Guidance on Foreign Entity of Concern restrictions applicable to domestic content bonus under §§48E(d)(3) and 45Y. Defines FEOC; describes disqualification rules." },
+    // §48E / §45Y
+    { id: "n_2024_19", category: "notice", citation: "Notice 2024-19",  title: "§48E / §45Y – Initial Guidance on Tech-Neutral Credits",       url: `${IRS_BASE}n-24-19.pdf`, notes: "Initial IRS guidance on tech-neutral credits under §48E (CEIC) and §45Y (CEPTC) for facilities beginning construction after 12/31/2024 (or later). Describes qualification, zero-emissions standard, adder interaction, and transition from §§48/45. Adder rules for energy community, domestic content, and low-income under §§48E and 45Y are generally coordinated — see also Notices 2023-29, 2023-38, 2023-17, and 2024-60." },
+    { id: "n_2023_29_45y", category: "notice", citation: "Notice 2023-29 (§45Y)",  title: "Energy Community – Applies to §45Y",  url: `${IRS_BASE}n-23-29.pdf`, notes: "Energy community bonus rules in Notice 2023-29 (as updated by 2023-45 and 2024-30) apply equally to §45Y(g)(4) as to §48(a)(9) and §48E(b)." },
+    { id: "n_2023_38_45y", category: "notice", citation: "Notice 2023-38 (§45Y)",  title: "Domestic Content – Applies to §45Y", url: `${IRS_BASE}n-23-38.pdf`, notes: "Domestic content bonus rules in Notice 2023-38 (as updated by 2023-47, 2024-9, 2024-41, and T.D. 10015) apply equally to §45Y(b)(3) as to §§48(a)(14) and 48E(d)." },
+    // ── PLRs ──────────────────────────────────────────────────────────────────
+    { id: "plr_200013038", category: "plr", citation: "PLR 200013038", title: "Not a Building – Structural Component Analysis",    url: "", notes: "" },
+    { id: "plr_201308021", category: "plr", citation: "PLR 201308021", title: "Subsidized Energy Financing",                      url: "", notes: "" },
+    { id: "plr_200845008", category: "plr", citation: "PLR 200845008", title: "Subsidized Energy Financing",                      url: "", notes: "" },
+    { id: "plr_8931001",   category: "plr", citation: "PLR 8931001",   title: "ITC Allocation",                                   url: "", notes: "" },
+    { id: "plr_8651050",   category: "plr", citation: "PLR 8651050",   title: "ITC Allocation",                                   url: "", notes: "" },
+    { id: "plr_201523014", category: "plr", citation: "PLR 201523014", title: "Reflective Roof – Energy Property Qualification",   url: "", notes: "" },
+    { id: "plr_201450013", category: "plr", citation: "PLR 201450013", title: "Reflective Roof – Energy Property Qualification",   url: "", notes: "" },
+    { id: "plr_201121005", category: "plr", citation: "PLR 201121005", title: "Roof-Mounted Solar – Energy Property",              url: "", notes: "" },
+    { id: "plr_201043023", category: "plr", citation: "PLR 201043023", title: "Solar PV Curtain Wall",                            url: "", notes: "" },
+    { id: "plr_201444025", category: "plr", citation: "PLR 201444025", title: "Carport Solar – Energy Property",                  url: "", notes: "" },
+    { id: "plr_201426013", category: "plr", citation: "PLR 201426013", title: "Puerto Rico – U.S. Possession ITC",                url: "", notes: "" },
+    { id: "plr_201510038", category: "plr", citation: "PLR 201510038", title: "What is the \"United States\" for ITC Purposes",   url: "", notes: "" },
+    { id: "plr_201308005", category: "plr", citation: "PLR 201308005", title: "Storage – Energy Property Qualification",          url: "", notes: "" },
+    { id: "plr_201208035", category: "plr", citation: "PLR 201208035", title: "Storage – Energy Property Qualification",          url: "", notes: "" },
+    { id: "plr_201142005", category: "plr", citation: "PLR 201142005", title: "Storage – Energy Property Qualification",          url: "", notes: "" },
+    { id: "plr_201326009", category: "plr", citation: "PLR 201326009", title: "Placed in Service – Solar",                       url: "", notes: "" },
+    { id: "plr_201311003", category: "plr", citation: "PLR 201311003", title: "Placed in Service – Wind",                        url: "", notes: "" },
+    { id: "plr_201205005", category: "plr", citation: "PLR 201205005", title: "Placed in Service – Wind",                        url: "", notes: "" },
+    { id: "plr_201210022", category: "plr", citation: "PLR 201210022", title: "Placed in Service – Refined Coal (80-20 Rule)",    url: "", notes: "" },
+    { id: "plr_200333041", category: "plr", citation: "PLR 200333041", title: "Placed in Service – Wind",                        url: "", notes: "" },
+    { id: "plr_8546035",   category: "plr", citation: "PLR 8546035",   title: "Sale to Related Party",                           url: "", notes: "" },
+    { id: "plr_8449019",   category: "plr", citation: "PLR 8449019",   title: "Sale to Related Party",                           url: "", notes: "" },
+    { id: "plr_8135075",   category: "plr", citation: "PLR 8135075",   title: "Sale to Related Party",                           url: "", notes: "" },
+    { id: "plr_201310001", category: "plr", citation: "PLR 201310001", title: "Tribal Ownership – ITC / PTC Eligibility",        url: "", notes: "" },
+    { id: "plr_9017044",   category: "plr", citation: "PLR 9017044",   title: "Elect Out of Three-Month Rule",                   url: "", notes: "" },
+    // ── Chief Counsel Advice ──────────────────────────────────────────────────
+    { id: "plr_202318004", category: "plr", citation: "PLR 202318004", title: "Satellite Casualty – §1033 Involuntary Conversion", url: "", notes: "§1033 nonrecognition for involuntary conversion of satellite. Addresses replacement property requirements and timing rules for space-based assets." },
+    { id: "cca_201524024", category: "cca", citation: "CCA 201524024", title: "Solar Partnership Flip",         url: "", notes: "IRS Chief Counsel guidance blessing partnership flip structure for solar (by analogy to wind Rev. Proc. 2007-65)." },
+    { id: "cca_200812023", category: "cca", citation: "CCA 200812023", title: "ITC Allocation in Partnerships", url: "", notes: "" },
+  ],
+};
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return Promise.resolve(saved ? JSON.parse(saved) : defaultData);
+  } catch { return Promise.resolve(defaultData); }
+}
+function saveData(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const SANDBOX_COLORS = ["#c9913d","#5b8fb9","#7e6bc4","#4a9d7f","#b85c5c","#7a9e3b","#c2778a","#d4836a"];
+
+const ITEM_TYPES = [
+  { value: "whitepaper", label: "Whitepaper",    icon: "📄" },
+  { value: "article",    label: "Article",       icon: "📰" },
+  { value: "book",       label: "Book",          icon: "📚" },
+  { value: "ppt",        label: "Presentation",  icon: "📊" },
+  { value: "memo",       label: "Memo / Brief",  icon: "📝" },
+  { value: "other",      label: "Other",         icon: "📎" },
+];
+
+const REF_CATEGORIES = [
+  { value: "irc",      label: "Current IRC Sections",           short: "IRC",        color: "#c9913d", group: "Code" },
+  { value: "irc_old",  label: "Old / Repealed IRC Sections",    short: "Old IRC",    color: "#a06820", group: "Code" },
+  { value: "reg",      label: "Treasury Regulations",           short: "Reg.",       color: "#5b8fb9", group: "Regulations" },
+  { value: "reg_old",  label: "Old Section Regulations",        short: "Old Reg.",   color: "#3d6e99", group: "Regulations" },
+  { value: "revproc",  label: "Revenue Procedures",             short: "Rev. Proc.", color: "#c2778a", group: "Guidance" },
+  { value: "revrule",  label: "Revenue Rulings",                short: "Rev. Rul.",  color: "#7a9e3b", group: "Guidance" },
+  { value: "notice",   label: "Notices",                        short: "Notice",     color: "#4a9d7f", group: "Guidance" },
+  { value: "nprm",     label: "Notices of Proposed Rulemaking", short: "NPRM",       color: "#9b72cf", group: "Guidance" },
+  { value: "plr",      label: "Private Letter Rulings",         short: "PLR",        color: "#b85c5c", group: "Rulings" },
+  { value: "cca",      label: "Chief Counsel Advice",           short: "CCA",        color: "#d4836a", group: "Rulings" },
+  { value: "other",    label: "Other Authority",                short: "Other",      color: "#888",    group: "Other" },
+];
+
+const GROUPS = ["Code", "Regulations", "Guidance", "Rulings", "Other"];
+const getCatInfo = (v) => REF_CATEGORIES.find(c => c.value === v) || REF_CATEGORIES[10];
+const getTypeInfo = (v) => ITEM_TYPES.find(t => t.value === v) || ITEM_TYPES[5];
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+// ─── Shared UI primitives ─────────────────────────────────────────────────────
+const inputStyle = {width:"100%",background:"#0f1219",border:"1px solid #2e3244",borderRadius:"6px",padding:".55rem .7rem",color:"#d4cfc5",fontSize:".88rem",outline:"none",boxSizing:"border-box"};
+const btnPrimary = {background:"#c9913d",color:"#0f1219",border:"none",borderRadius:"6px",padding:".55rem 1.2rem",fontWeight:700,cursor:"pointer",fontSize:".85rem",letterSpacing:".03em"};
+const btnGhost   = {background:"transparent",color:"#888",border:"1px solid #2e3244",borderRadius:"6px",padding:".55rem 1rem",cursor:"pointer",fontSize:".85rem"};
+
+function Modal({ title, onClose, children }) {
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.65)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem"}} onClick={onClose}>
+      <div style={{background:"#181c25",border:"1px solid #2e3244",borderRadius:"12px",width:"100%",maxWidth:"520px",maxHeight:"85vh",overflowY:"auto",padding:"1.75rem"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.25rem"}}>
+          <h3 style={{margin:0,fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.35rem",color:"#e8dcc8"}}>{title}</h3>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"#888",cursor:"pointer",fontSize:"1.4rem",lineHeight:1}}>×</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+function Field({ label, children }) {
+  return (
+    <div style={{marginBottom:"1rem"}}>
+      <label style={{display:"block",fontSize:".72rem",letterSpacing:".08em",textTransform:"uppercase",color:"#888",marginBottom:".35rem"}}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+// ─── Modals ───────────────────────────────────────────────────────────────────
+function SandboxModal({ sandbox, onSave, onClose }) {
+  const [name, setName]   = useState(sandbox?.name || "");
+  const [desc, setDesc]   = useState(sandbox?.description || "");
+  const [color, setColor] = useState(sandbox?.color || SANDBOX_COLORS[0]);
+  return (
+    <Modal title={sandbox ? "Edit Sandbox" : "New Sandbox"} onClose={onClose}>
+      <Field label="Name"><input style={inputStyle} value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Section 199A Research" /></Field>
+      <Field label="Description"><input style={inputStyle} value={desc} onChange={e=>setDesc(e.target.value)} placeholder="Brief description…" /></Field>
+      <Field label="Color">
+        <div style={{display:"flex",gap:".5rem",flexWrap:"wrap"}}>
+          {SANDBOX_COLORS.map(c=><div key={c} onClick={()=>setColor(c)} style={{width:28,height:28,borderRadius:"50%",background:c,cursor:"pointer",border:color===c?"3px solid #fff":"3px solid transparent",boxSizing:"border-box"}} />)}
+        </div>
+      </Field>
+      <div style={{display:"flex",gap:".75rem",justifyContent:"flex-end",marginTop:"1.5rem"}}>
+        <button style={btnGhost} onClick={onClose}>Cancel</button>
+        <button style={btnPrimary} onClick={()=>{if(name.trim())onSave({name:name.trim(),description:desc,color})}}>Save</button>
+      </div>
+    </Modal>
+  );
+}
+
+function ItemModal({ item, onSave, onClose }) {
+  const [type,  setType]  = useState(item?.type  || "article");
+  const [title, setTitle] = useState(item?.title || "");
+  const [url,   setUrl]   = useState(item?.url   || "");
+  const [notes, setNotes] = useState(item?.notes || "");
+  return (
+    <Modal title={item ? "Edit Item" : "Add Item"} onClose={onClose}>
+      <Field label="Type">
+        <select style={inputStyle} value={type} onChange={e=>setType(e.target.value)}>
+          {ITEM_TYPES.map(t=><option key={t.value} value={t.value}>{t.icon} {t.label}</option>)}
+        </select>
+      </Field>
+      <Field label="Title"><input style={inputStyle} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Title of the resource" /></Field>
+      <Field label="URL / Path"><input style={inputStyle} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://… or local path" /></Field>
+      <Field label="Notes"><textarea style={{...inputStyle,resize:"vertical",minHeight:"80px"}} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Key takeaways, relevance…" /></Field>
+      <div style={{display:"flex",gap:".75rem",justifyContent:"flex-end",marginTop:"1.5rem"}}>
+        <button style={btnGhost} onClick={onClose}>Cancel</button>
+        <button style={btnPrimary} onClick={()=>{if(title.trim())onSave({type,title:title.trim(),url,notes,date:item?.date||new Date().toISOString().slice(0,10)})}}>Save</button>
+      </div>
+    </Modal>
+  );
+}
+
+function RefModal({ refItem, onSave, onClose }) {
+  const [category, setCategory] = useState(refItem?.category || "irc");
+  const [citation, setCitation] = useState(refItem?.citation || "");
+  const [title,    setTitle]    = useState(refItem?.title    || "");
+  const [url,      setUrl]      = useState(refItem?.url      || "");
+  const [notes,    setNotes]    = useState(refItem?.notes    || "");
+  return (
+    <Modal title={refItem ? "Edit Reference" : "Add Quick Reference"} onClose={onClose}>
+      <Field label="Authority Type">
+        <select style={inputStyle} value={category} onChange={e=>setCategory(e.target.value)}>
+          {GROUPS.map(g=>(
+            <optgroup key={g} label={`── ${g} ──`}>
+              {REF_CATEGORIES.filter(c=>c.group===g).map(c=><option key={c.value} value={c.value}>{c.label}</option>)}
+            </optgroup>
+          ))}
+        </select>
+      </Field>
+      <Field label="Citation"><input style={inputStyle} value={citation} onChange={e=>setCitation(e.target.value)} placeholder="e.g. § 199A, Rev. Proc. 2024-1, PLR 202312005" /></Field>
+      <Field label="Title / Description"><input style={inputStyle} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Short description" /></Field>
+      <Field label="URL"><input style={inputStyle} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://…" /></Field>
+      <Field label="Notes"><textarea style={{...inputStyle,resize:"vertical",minHeight:"80px"}} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Key points, effective dates, cross-refs…" /></Field>
+      <div style={{display:"flex",gap:".75rem",justifyContent:"flex-end",marginTop:"1.5rem"}}>
+        <button style={btnGhost} onClick={onClose}>Cancel</button>
+        <button style={btnPrimary} onClick={()=>{if(citation.trim())onSave({category,citation:citation.trim(),title,url,notes})}}>Save</button>
+      </div>
+    </Modal>
+  );
+}
+
+// ─── Sandbox Detail ───────────────────────────────────────────────────────────
+function SandboxDetail({ sandbox, onBack, onUpdate }) {
+  const [showAdd,   setShowAdd]  = useState(false);
+  const [editItem,  setEditItem] = useState(null);
+  const [search,    setSearch]   = useState("");
+  const [filterType,setFilterType] = useState("all");
+
+  const filtered = (sandbox.items||[]).filter(it =>
+    (filterType==="all"||it.type===filterType) &&
+    (!search || it.title.toLowerCase().includes(search.toLowerCase()) || (it.notes||"").toLowerCase().includes(search.toLowerCase()))
+  );
+  const addItem  = d => { onUpdate({...sandbox,items:[...(sandbox.items||[]),{id:uid(),...d}]}); setShowAdd(false); };
+  const saveEdit = d => { onUpdate({...sandbox,items:sandbox.items.map(i=>i.id===editItem.id?{...i,...d}:i)}); setEditItem(null); };
+  const del      = id => { if(!confirm("Remove this item?"))return; onUpdate({...sandbox,items:sandbox.items.filter(i=>i.id!==id)}); };
+
+  return (
+    <div>
+      {showAdd  && <ItemModal onSave={addItem}  onClose={()=>setShowAdd(false)} />}
+      {editItem && <ItemModal item={editItem} onSave={saveEdit} onClose={()=>setEditItem(null)} />}
+      <div style={{display:"flex",alignItems:"center",gap:"1rem",marginBottom:"1.5rem"}}>
+        <button onClick={onBack} style={{...btnGhost,padding:".4rem .8rem",fontSize:".8rem"}}>← Back</button>
+        <div style={{width:12,height:12,borderRadius:"50%",background:sandbox.color,flexShrink:0}} />
+        <h2 style={{margin:0,fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.6rem",color:"#e8dcc8"}}>{sandbox.name}</h2>
+        <button style={{...btnPrimary,marginLeft:"auto",padding:".45rem 1rem"}} onClick={()=>setShowAdd(true)}>+ Add Item</button>
+      </div>
+      {sandbox.description && <p style={{color:"#7a8099",fontSize:".88rem",marginBottom:"1.5rem",marginTop:"-1rem"}}>{sandbox.description}</p>}
+      <div style={{display:"flex",gap:".75rem",marginBottom:"1.25rem",flexWrap:"wrap"}}>
+        <input style={{...inputStyle,maxWidth:"260px"}} placeholder="Search items…" value={search} onChange={e=>setSearch(e.target.value)} />
+        <select style={{...inputStyle,width:"auto"}} value={filterType} onChange={e=>setFilterType(e.target.value)}>
+          <option value="all">All types</option>
+          {ITEM_TYPES.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
+      </div>
+      {filtered.length===0
+        ? <div style={{textAlign:"center",padding:"3rem",color:"#4a4f66",fontSize:".9rem"}}>No items yet — add some resources above.</div>
+        : <div style={{display:"flex",flexDirection:"column",gap:".65rem"}}>
+            {filtered.map(item => {
+              const t = getTypeInfo(item.type);
+              return (
+                <div key={item.id} style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"8px",padding:"1rem 1.1rem",display:"flex",gap:"1rem",alignItems:"flex-start"}}>
+                  <span style={{fontSize:"1.3rem",flexShrink:0,marginTop:".1rem"}}>{t.icon}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",alignItems:"baseline",gap:".6rem",flexWrap:"wrap"}}>
+                      {item.url ? <a href={item.url} target="_blank" rel="noreferrer" style={{color:"#e8dcc8",fontWeight:600,fontSize:".95rem",textDecoration:"none",borderBottom:"1px solid #c9913d"}}>{item.title}</a>
+                        : <span style={{color:"#e8dcc8",fontWeight:600,fontSize:".95rem"}}>{item.title}</span>}
+                      <span style={{fontSize:".7rem",color:"#555",letterSpacing:".05em",textTransform:"uppercase"}}>{t.label}</span>
+                    </div>
+                    {item.notes && <p style={{margin:".3rem 0 0",color:"#7a8099",fontSize:".83rem",lineHeight:1.5}}>{item.notes}</p>}
+                    <div style={{fontSize:".72rem",color:"#444",marginTop:".4rem"}}>{item.date}</div>
+                  </div>
+                  <div style={{display:"flex",gap:".4rem",flexShrink:0}}>
+                    <button onClick={()=>setEditItem(item)} style={{background:"none",border:"1px solid #2a2e3f",borderRadius:"5px",color:"#888",cursor:"pointer",padding:".25rem .55rem",fontSize:".75rem"}}>Edit</button>
+                    <button onClick={()=>del(item.id)} style={{background:"none",border:"1px solid #2a2e3f",borderRadius:"5px",color:"#b85c5c",cursor:"pointer",padding:".25rem .55rem",fontSize:".75rem"}}>✕</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+      }
+    </div>
+  );
+}
+
+// ─── Sandboxes Grid ───────────────────────────────────────────────────────────
+function SandboxesView({ sandboxes, onOpenSandbox, onAddSandbox, onEditSandbox, onDeleteSandbox }) {
+  return (
+    <div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.75rem"}}>
+        <div>
+          <h2 style={{margin:0,fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.7rem",color:"#e8dcc8"}}>Research Sandboxes</h2>
+          <p style={{margin:".3rem 0 0",color:"#5a5f78",fontSize:".83rem"}}>Organize resources by project, client, or topic</p>
+        </div>
+        <button style={btnPrimary} onClick={onAddSandbox}>+ New Sandbox</button>
+      </div>
+      {sandboxes.length===0
+        ? <div style={{textAlign:"center",padding:"4rem",color:"#4a4f66"}}>No sandboxes yet. Create one to get started.</div>
+        : <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:"1rem"}}>
+            {sandboxes.map(sb=>(
+              <div key={sb.id} style={{background:"#181c25",border:"1px solid #2a2e3f",borderRadius:"10px",padding:"1.4rem",cursor:"pointer",transition:"border-color .15s"}}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=sb.color}
+                onMouseLeave={e=>e.currentTarget.style.borderColor="#2a2e3f"}
+                onClick={()=>onOpenSandbox(sb)}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:".75rem"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:".65rem"}}>
+                    <div style={{width:10,height:10,borderRadius:"50%",background:sb.color,flexShrink:0}} />
+                    <span style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.15rem",color:"#e8dcc8",fontWeight:600}}>{sb.name}</span>
+                  </div>
+                  <div style={{display:"flex",gap:".3rem"}} onClick={e=>e.stopPropagation()}>
+                    <button onClick={()=>onEditSandbox(sb)} style={{background:"none",border:"none",color:"#555",cursor:"pointer",fontSize:".8rem",padding:".2rem"}}>✏️</button>
+                    <button onClick={()=>onDeleteSandbox(sb.id)} style={{background:"none",border:"none",color:"#b85c5c",cursor:"pointer",fontSize:".8rem",padding:".2rem"}}>✕</button>
+                  </div>
+                </div>
+                {sb.description && <p style={{margin:"0 0 .75rem",color:"#5a6080",fontSize:".82rem",lineHeight:1.5}}>{sb.description}</p>}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <span style={{fontSize:".78rem",color:"#4a4f66"}}>{(sb.items||[]).length} item{(sb.items||[]).length!==1?"s":""}</span>
+                  <div style={{display:"flex",gap:".3rem",flexWrap:"wrap",justifyContent:"flex-end"}}>
+                    {[...new Set((sb.items||[]).map(i=>i.type))].slice(0,4).map(t=>(
+                      <span key={t} style={{fontSize:".7rem",background:"#0f1219",border:"1px solid #2a2e3f",borderRadius:"4px",padding:".1rem .4rem",color:"#666"}}>{getTypeInfo(t).icon}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+      }
+    </div>
+  );
+}
+
+// ─── Quick Reference View ─────────────────────────────────────────────────────
+function QuickRefView({ quickRefs, onUpdate }) {
+  const [showAdd,     setShowAdd]     = useState(false);
+  const [editRef,     setEditRef]     = useState(null);
+  const [search,      setSearch]      = useState("");
+  const [filterCat,   setFilterCat]   = useState("all");
+  const [filterGroup, setFilterGroup] = useState("all");
+  const [collapsed,   setCollapsed]   = useState({});
+
+  const toggle = key => setCollapsed(p=>({...p,[key]:!p[key]}));
+
+  const filtered = quickRefs.filter(r => {
+    const cat = getCatInfo(r.category);
+    const q = search.toLowerCase();
+    return (filterGroup==="all"||cat.group===filterGroup)
+        && (filterCat==="all"||r.category===filterCat)
+        && (!q || r.citation.toLowerCase().includes(q) || (r.title||"").toLowerCase().includes(q) || (r.notes||"").toLowerCase().includes(q));
+  });
+
+  const visibleCats = REF_CATEGORIES.filter(c=>(filterGroup==="all"||c.group===filterGroup)&&(filterCat==="all"||c.value===filterCat));
+  const byCat = visibleCats.map(cat=>({...cat,refs:filtered.filter(r=>r.category===cat.value)})).filter(g=>g.refs.length>0);
+  const byGroup = GROUPS.map(g=>({group:g,cats:byCat.filter(c=>c.group===g)})).filter(g=>g.cats.length>0);
+
+  const addRef  = d => { onUpdate([...quickRefs,{id:uid(),...d}]); setShowAdd(false); };
+  const saveEdit = d => { onUpdate(quickRefs.map(r=>r.id===editRef.id?{...r,...d}:r)); setEditRef(null); };
+  const del     = id => { if(!confirm("Remove this reference?"))return; onUpdate(quickRefs.filter(r=>r.id!==id)); };
+
+  return (
+    <div>
+      {showAdd  && <RefModal onSave={addRef}  onClose={()=>setShowAdd(false)} />}
+      {editRef  && <RefModal refItem={editRef} onSave={saveEdit} onClose={()=>setEditRef(null)} />}
+
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1.75rem"}}>
+        <div>
+          <h2 style={{margin:0,fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.7rem",color:"#e8dcc8"}}>Quick Reference</h2>
+          <p style={{margin:".3rem 0 0",color:"#5a5f78",fontSize:".83rem"}}>{filtered.length} reference{filtered.length!==1?"s":""} · IRC · Old IRC · Regs · Old Regs · Rev. Procs. · Rev. Rul. · Notices · PLRs · CCAs</p>
+        </div>
+        <button style={btnPrimary} onClick={()=>setShowAdd(true)}>+ Add Reference</button>
+      </div>
+
+      <div style={{display:"flex",gap:".65rem",marginBottom:"1.5rem",flexWrap:"wrap"}}>
+        <input style={{...inputStyle,maxWidth:"240px"}} placeholder="Search citations, titles…" value={search} onChange={e=>setSearch(e.target.value)} />
+        <select style={{...inputStyle,width:"auto"}} value={filterGroup} onChange={e=>{setFilterGroup(e.target.value);setFilterCat("all");}}>
+          <option value="all">All groups</option>
+          {GROUPS.map(g=><option key={g} value={g}>{g}</option>)}
+        </select>
+        <select style={{...inputStyle,width:"auto"}} value={filterCat} onChange={e=>setFilterCat(e.target.value)}>
+          <option value="all">All types</option>
+          {(filterGroup==="all"?REF_CATEGORIES:REF_CATEGORIES.filter(c=>c.group===filterGroup)).map(c=>(
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {byGroup.length===0
+        ? <div style={{textAlign:"center",padding:"3rem",color:"#4a4f66",fontSize:".9rem"}}>No references found.</div>
+        : <div style={{display:"flex",flexDirection:"column",gap:"2.25rem"}}>
+            {byGroup.map(({group,cats})=>(
+              <div key={group}>
+                <div style={{display:"flex",alignItems:"center",gap:"1rem",marginBottom:"1rem"}}>
+                  <h3 style={{margin:0,fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.05rem",color:"#6a7090",letterSpacing:".08em",textTransform:"uppercase"}}>{group}</h3>
+                  <div style={{flex:1,height:"1px",background:"#1a1e2e"}} />
+                  <span style={{fontSize:".72rem",color:"#3a3f55"}}>{cats.reduce((a,c)=>a+c.refs.length,0)}</span>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:"1.1rem"}}>
+                  {cats.map(cat=>{
+                    const isCollapsed = collapsed[cat.value];
+                    return (
+                      <div key={cat.value}>
+                        <div style={{display:"flex",alignItems:"center",gap:".6rem",marginBottom:".55rem",cursor:"pointer",userSelect:"none"}} onClick={()=>toggle(cat.value)}>
+                          <span style={{display:"inline-block",padding:".18rem .55rem",borderRadius:"4px",background:cat.color+"22",border:`1px solid ${cat.color}55`,color:cat.color,fontSize:".7rem",fontWeight:700,letterSpacing:".07em",textTransform:"uppercase",flexShrink:0}}>{cat.short}</span>
+                          <span style={{color:"#7a8099",fontSize:".86rem"}}>{cat.label}</span>
+                          <span style={{fontSize:".7rem",color:"#3a3f55"}}>({cat.refs.length})</span>
+                          <div style={{flex:1,height:"1px",background:"#181c25"}} />
+                          <span style={{color:"#3a3f55",fontSize:".75rem",display:"inline-block",transform:isCollapsed?"rotate(-90deg)":"rotate(0deg)",transition:"transform .15s"}}>▾</span>
+                        </div>
+                        {!isCollapsed && (
+                          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:".5rem",paddingLeft:".75rem"}}>
+                            {cat.refs.map(ref=>(
+                              <div key={ref.id} style={{background:"#181c25",border:"1px solid #22263a",borderLeft:`3px solid ${cat.color}66`,borderRadius:"0 7px 7px 0",padding:".65rem .85rem",display:"flex",flexDirection:"column",gap:".3rem",position:"relative"}}>
+                                <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:".5rem"}}>
+                                  <code style={{color:cat.color,fontFamily:"'JetBrains Mono','Fira Mono',monospace",fontSize:".82rem",fontWeight:700,lineHeight:1.3,flex:1,minWidth:0}}>
+                                    {ref.url ? <a href={ref.url} target="_blank" rel="noreferrer" style={{color:"inherit",textDecoration:"none",borderBottom:`1px solid ${cat.color}55`}}>{ref.citation}</a> : ref.citation}
+                                  </code>
+                                  <div style={{display:"flex",gap:".25rem",flexShrink:0}}>
+                                    <button onClick={()=>setEditRef(ref)} style={{background:"none",border:"1px solid #22263a",borderRadius:"4px",color:"#555",cursor:"pointer",padding:".15rem .4rem",fontSize:".68rem",lineHeight:1}}>✏</button>
+                                    <button onClick={()=>del(ref.id)}    style={{background:"none",border:"1px solid #22263a",borderRadius:"4px",color:"#7a3535",cursor:"pointer",padding:".15rem .4rem",fontSize:".68rem",lineHeight:1}}>✕</button>
+                                  </div>
+                                </div>
+                                {ref.title && <span style={{color:"#7a8099",fontSize:".78rem",lineHeight:1.35}}>{ref.title}</span>}
+                                {ref.notes && <p style={{margin:0,color:"#3e4460",fontSize:".73rem",lineHeight:1.45}}>{ref.notes}</p>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+      }
+    </div>
+  );
+}
+
+// ─── Root App ─────────────────────────────────────────────────────────────────
+function App() {
+  const [data,           setData]           = useState(null);
+  const [view,           setView]           = useState("sandboxes");
+  const [activeSandbox,  setActiveSandbox]  = useState(null);
+  const [showAddSandbox, setShowAddSandbox] = useState(false);
+  const [editSandbox,    setEditSandbox]    = useState(null);
+
+  useEffect(()=>{ loadData().then(d=>setData(d)); },[]);
+  const persist = useCallback(d=>{ setData(d); saveData(d); },[]);
+
+  if (!data) return <div style={{minHeight:"100vh",background:"#0f1219",display:"flex",alignItems:"center",justifyContent:"center",color:"#555",fontFamily:"system-ui"}}>Loading…</div>;
+
+  const createSandbox = f => { persist({...data,sandboxes:[...data.sandboxes,{id:uid(),items:[],...f}]}); setShowAddSandbox(false); };
+  const updateSandbox = f => { persist({...data,sandboxes:data.sandboxes.map(s=>s.id===editSandbox.id?{...s,...f}:s)}); setEditSandbox(null); };
+  const deleteSandbox = id => {
+    if(!confirm("Delete this sandbox and all its items?"))return;
+    persist({...data,sandboxes:data.sandboxes.filter(s=>s.id!==id)});
+    if(activeSandbox?.id===id) setActiveSandbox(null);
+  };
+  const updateSandboxItems = sb => { persist({...data,sandboxes:data.sandboxes.map(s=>s.id===sb.id?sb:s)}); setActiveSandbox(sb); };
+  const updateRefs = refs => persist({...data,quickRefs:refs});
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        *{box-sizing:border-box;} body{margin:0;}
+        ::-webkit-scrollbar{width:6px;height:6px;}
+        ::-webkit-scrollbar-track{background:#0f1219;}
+        ::-webkit-scrollbar-thumb{background:#2a2e3f;border-radius:3px;}
+        select option,select optgroup{background:#181c25;color:#d4cfc5;}
+      `}</style>
+
+      {showAddSandbox && <SandboxModal onSave={createSandbox} onClose={()=>setShowAddSandbox(false)} />}
+      {editSandbox    && <SandboxModal sandbox={editSandbox} onSave={updateSandbox} onClose={()=>setEditSandbox(null)} />}
+
+      <div style={{minHeight:"100vh",background:"#0f1219",color:"#d4cfc5",fontFamily:"system-ui,-apple-system,sans-serif",display:"flex",flexDirection:"column"}}>
+        <header style={{borderBottom:"1px solid #1e2235",padding:"0 2rem",display:"flex",alignItems:"center",height:"60px",gap:"2rem",flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:".5rem"}}>
+            <span style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.4rem",fontWeight:700,color:"#c9913d",letterSpacing:".04em"}}>Lex</span>
+            <span style={{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.4rem",color:"#e8dcc8",letterSpacing:".02em"}}>Research Hub</span>
+          </div>
+          <nav style={{display:"flex",gap:".25rem",marginLeft:"auto"}}>
+            {[["sandboxes","Sandboxes"],["refs","Quick Reference"]].map(([v,label])=>(
+              <button key={v} onClick={()=>{setView(v);setActiveSandbox(null);}}
+                style={{background:view===v?"#181c25":"transparent",border:view===v?"1px solid #2a2e3f":"1px solid transparent",borderRadius:"6px",color:view===v?"#e8dcc8":"#5a5f78",padding:".4rem .9rem",cursor:"pointer",fontSize:".83rem",fontWeight:view===v?600:400,transition:"all .15s"}}>
+                {label}
+              </button>
+            ))}
+          </nav>
+          <div style={{width:8,height:8,borderRadius:"50%",background:"#4a9d7f",flexShrink:0,marginLeft:".5rem"}} title="Data saved locally" />
+        </header>
+
+        <main style={{flex:1,padding:"2rem",maxWidth:"1100px",width:"100%",margin:"0 auto"}}>
+          {view==="sandboxes"&&!activeSandbox && <SandboxesView sandboxes={data.sandboxes} onOpenSandbox={setActiveSandbox} onAddSandbox={()=>setShowAddSandbox(true)} onEditSandbox={setEditSandbox} onDeleteSandbox={deleteSandbox} />}
+          {view==="sandboxes"&&activeSandbox  && <SandboxDetail sandbox={data.sandboxes.find(s=>s.id===activeSandbox.id)||activeSandbox} onBack={()=>setActiveSandbox(null)} onUpdate={updateSandboxItems} />}
+          {view==="refs" && <QuickRefView quickRefs={data.quickRefs} onUpdate={updateRefs} />}
+        </main>
+
+        <footer style={{borderTop:"1px solid #1a1e2e",padding:".75rem 2rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontSize:".72rem",color:"#2e3244",letterSpacing:".05em"}}>DATA SAVED IN BROWSER · PRIVATE TO THIS DEVICE</span>
+          <span style={{fontSize:".72rem",color:"#2e3244"}}>{data.sandboxes.length} sandbox{data.sandboxes.length!==1?"es":""} · {data.sandboxes.reduce((a,s)=>a+(s.items||[]).length,0)} items · {data.quickRefs.length} references</span>
+        </footer>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+
+  </script>
+</body>
+</html>
